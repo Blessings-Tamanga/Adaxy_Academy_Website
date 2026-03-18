@@ -1,0 +1,23 @@
+RewriteEngine On
+
+# Block direct access to config
+<Files "config/db_connect.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# Block PHP in uploads
+<Directory "uploads">
+    <Files "*">
+        Order Allow,Deny
+        Deny from all
+    </Files>
+</Directory>
+
+# Secure headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
+
+# Login required for dashboards
+RewriteRule ^(student_dashboard|teacher_dashboard|management_dashboard)/ - [F,L]
