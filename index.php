@@ -105,8 +105,8 @@ include "config/db_connect.php";
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#portals" data-bs-toggle="dropdown">Portals</a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="portals/login.php"><i class="fa fa-user-graduate"></i> Student Portal</a></li>
-            <li><a class="dropdown-item" href="portals/login.php"><i class="fa fa-chalkboard-teacher"></i> Teacher Portal</a></li>
+            <li><a class="dropdown-item" href="Auth/login.php?role=student"><i class="fa fa-user-graduate"></i> Student Portal</a></li>
+            <li><a class="dropdown-item" href="Auth/login.php?role=teacher"><i class="fa fa-chalkboard-teacher"></i> Teacher Portal</a></li>
           </ul>
         </li>
 
@@ -162,12 +162,12 @@ include "config/db_connect.php";
   <div class="container">
     <div class="row gy-1">
       <div class="col-6 col-md-3">
-        <a href="Auth/login.php" class="quick-link-item">
+        <a href="Auth/login.php?role=student" class="quick-link-item">
           <i class="fa fa-user-circle"></i> Student Portal
         </a>
       </div>
       <div class="col-6 col-md-3">
-        <a href="#portals" class="quick-link-item">
+        <a href="Auth/login.php?role=teacher" class="quick-link-item">
           <i class="fa fa-chalkboard-teacher"></i> Teacher Portal
         </a>
       </div>
@@ -594,7 +594,7 @@ include "config/db_connect.php";
             <li><i class="fa fa-check-circle"></i> Access library resources</li>
             <li><i class="fa fa-check-circle"></i> Check fee balances</li>
           </ul>
-          <a href="Auth/login.php" class="btn-portal btn-portal-student">
+          <a href="Auth/login.php?role=student" class="btn-portal btn-portal-student">
             <i class="fa fa-arrow-right-to-bracket"></i> Student Login
           </a>
         </div>
@@ -611,7 +611,7 @@ include "config/db_connect.php";
             <li><i class="fa fa-check-circle"></i> Access staff resource library</li>
             <li><i class="fa fa-check-circle"></i> Communicate with parents</li>
           </ul>
-          <a href="#" class="btn-portal btn-portal-teacher">
+          <a href="Auth/login.php?role=teacher" class="btn-portal btn-portal-teacher">
             <i class="fa fa-arrow-right-to-bracket"></i> Staff Login
           </a>
         </div>

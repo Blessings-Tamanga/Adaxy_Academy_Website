@@ -1,13 +1,21 @@
 <?php
-// Require at top of protected pages
 session_start();
-if (!isset($_SESSION['alogin']) && !isset($_SESSION['tlogin']) && !isset($_SESSION['slogin'])) {
-    header('Location: ../Auth/login.php');
-    exit;
+
+// 🔥 DEV MODE (REMOVE IN PRODUCTION)
+if (!isset($_SESSION['slogin'])) {
+    $_SESSION['slogin'] = 'STD001'; // use real RollId from DB
 }
-$role = '';
+/*session_start();
+require_once '../config/db_connect.php';
+
+// Determine role
+$role = null;
 if (isset($_SESSION['alogin'])) $role = 'admin';
 elseif (isset($_SESSION['tlogin'])) $role = 'teacher';
 elseif (isset($_SESSION['slogin'])) $role = 'student';
-?>
 
+if (!$role) {
+    header('Location: ../Auth/login.php');
+    exit;
+}*/
+?>
