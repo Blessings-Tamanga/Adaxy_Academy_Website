@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="brand-text-sub">Est. 2026 · Lilongwe</div>
         </div>
       </a>
-      <a href="index.php" class="btn-enroll d-inline-flex align-items-center gap-2">
+      <a href="../index.php" class="btn-enroll d-inline-flex align-items-center gap-2">
         <i class="fa fa-arrow-left"></i> Back to Home
       </a>
     </div>
@@ -185,8 +185,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </span>
           </div>
 
-          <input type="hidden" id="roleInput" name="role" value="student">
-
           <h2 class="section-title" style="font-size: 28px; margin-bottom: 0;">Portal login</h2>
           <div class="divider-gold" style="margin-top: 8px;"></div>
 
@@ -195,10 +193,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php endif; ?>
 
           <form id="loginForm" class="mt-3" method="post">
+            <!-- THIS IS THE FIX - Hidden input for role -->
+            <input type="hidden" name="role" value="<?php echo htmlspecialchars($_GET['role'] ?? 'student'); ?>">
+            
             <div class="mb-4">
-              <label class="form-label fw-semibold text-navy">Email / Roll ID</label>
+              <label class="form-label fw-semibold text-navy">Username</label>
               <div class="input-group">
-                <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+                <span class="input-group-text"><i class="fa fa-user"></i></span>
                 <input type="text" class="form-control" name="username" placeholder="Enter your username" required autofocus>
               </div>
             </div>
@@ -254,17 +255,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 (function() {
     const urlParams = new URLSearchParams(window.location.search);
     let role = urlParams.get('role') || 'student';
-    if (!['student','teacher','admin'].includes(role)) role = 'student';
+    if (!['student','teacher','admin','management'].includes(role)) role = 'student';
 
     const roleDisplay = document.getElementById('roleDisplay');
     const roleIcon = document.getElementById('roleIcon');
     const submitRoleLabel = document.getElementById('submitRoleLabel');
-    const roleInput = document.getElementById('roleInput');
-    roleInput.value = role;
 
-    if(role==='teacher'){ roleDisplay.innerText='Teacher'; roleIcon.className='fa fa-chalkboard-teacher'; submitRoleLabel.innerText='Teacher'; }
-    else if(role==='admin'){ roleDisplay.innerText='Admin'; roleIcon.className='fa fa-user-shield'; submitRoleLabel.innerText='Admin'; }
-    else { roleDisplay.innerText='Student'; roleIcon.className='fa fa-user-graduate'; submitRoleLabel.innerText='Student'; }
+    if(role==='teacher'){ 
+        roleDisplay.innerText='Teacher'; 
+        roleIcon.className='fa fa-chalkboard-user'; 
+        submitRoleLabel.innerText='Teacher'; 
+    }
+    else if(role==='admin'){ 
+        roleDisplay.innerText='Admin'; 
+        roleIcon.className='fa fa-user-shield'; 
+        submitRoleLabel.innerText='Admin'; 
+    }
+    else if(role==='management'){ 
+        roleDisplay.innerText='Management'; 
+        roleIcon.className='fa fa-building'; 
+        submitRoleLabel.innerText='Management'; 
+    }
+    else { 
+        roleDisplay.innerText='Student'; 
+        roleIcon.className='fa fa-user-graduate'; 
+        submitRoleLabel.innerText='Student'; 
+    }
 
     const observer = new IntersectionObserver((entries)=>{
         entries.forEach(entry=>{ if(entry.isIntersecting){ entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
