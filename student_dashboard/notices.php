@@ -1,8 +1,16 @@
 <?php
+// ============================================================
+//  Adaxy Academy · Student Notices
+//  Clean and professional announcements page
+// ============================================================
+
 session_start();
 include('../config/db_connect.php');
 
-if (empty($_SESSION['slogin'])) { header('Location: ../Auth/login.php?role=student'); exit; }
+if (empty($_SESSION['slogin'])) {
+    header('Location: ../Auth/login.php?role=student');
+    exit;
+}
 
 $username = $_SESSION['slogin'];
 
@@ -18,14 +26,18 @@ $stmt->execute();
 $student = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-if (!$student) { session_destroy(); header('Location: ../Auth/login.php?role=student'); exit; }
+if (!$student) {
+    session_destroy();
+    header('Location: ../Auth/login.php?role=student');
+    exit;
+}
 
 $full_name  = $student['first_name'] . ' ' . $student['last_name'];
 $first_name = $student['first_name'];
 $class_name = $student['class_name'] ?? 'N/A';
 $initials   = strtoupper(substr($student['first_name'],0,1) . substr($student['last_name'],0,1));
 
-// fetch notices for students
+// Fetch notices for students
 $notices = $conn->query("
     SELECT * FROM notices
     WHERE  is_published = 1
@@ -33,18 +45,21 @@ $notices = $conn->query("
     ORDER  BY created_at DESC
 ")->fetch_all(MYSQLI_ASSOC);
 
+// Helper function for time ago
 function time_ago(string $dt): string {
     $diff = time() - strtotime($dt);
-    if ($diff < 3600)  return round($diff/60)  . 'm ago';
+    if ($diff < 60) return 'just now';
+    if ($diff < 3600)  return round($diff/60) . 'm ago';
     if ($diff < 86400) return round($diff/3600) . 'h ago';
-    return round($diff/86400) . 'd ago';
+    if ($diff < 604800) return round($diff/86400) . 'd ago';
+    return date('M j', strtotime($dt));
 }
 
 $audience_colors = [
-    'all'      => ['bg'=>'#dbeafe','color'=>'#1d4ed8','label'=>'All'],
-    'students' => ['bg'=>'#dcfce7','color'=>'#15803d','label'=>'Students'],
-    'teachers' => ['bg'=>'#ede9fe','color'=>'#6d28d9','label'=>'Teachers'],
-    'parents'  => ['bg'=>'#ffedd5','color'=>'#c2410c','label'=>'Parents'],
+    'all'      => ['bg' => '#DBEAFE', 'color' => '#1E40AF', 'label' => 'All'],
+    'students' => ['bg' => '#DCFCE7', 'color' => '#15803D', 'label' => 'Students'],
+    'teachers' => ['bg' => '#EDE9FE', 'color' => '#6D28D9', 'label' => 'Teachers'],
+    'parents'  => ['bg' => '#FFEDD5', 'color' => '#C2410C', 'label' => 'Parents'],
 ];
 
 $page_title = 'Notices';
@@ -53,45 +68,181 @@ $conn->close();
 include 'includes/header.php';
 ?>
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-  <div>
-    <div class="section-tag">Announcements</div>
-    <h2 style="font-size:26px;margin-bottom:4px;">Notices</h2>
-    <p style="color:var(--muted);"><?= count($notices) ?> notice<?= count($notices)!==1?'s':'' ?> available</p>
-  </div>
+<style>
+    .notices-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .notice-card {
+        background: white;
+        border-radius: 20px;
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: all 0.2s;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .notice-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        border-color: #2563EB;
+    }
+    
+    .notice-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 8px;
+    }
+    
+    .notice-meta {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: #6B7280;
+    }
+    
+    .notice-content {
+        color: #374151;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+    }
+    
+    .audience-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-left: 12px;
+        vertical-align: middle;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 24px;
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #E5E7EB;
+    }
+    
+    .empty-state i {
+        font-size: 56px;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+    
+    .fade-up {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .fade-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    @media (max-width: 768px) {
+        .notice-card {
+            padding: 20px;
+        }
+        .notice-title {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<div class="notices-container" style="padding: 0 20px 40px;">
+
+    <!-- Header -->
+    <div class="text-center mb-5 fade-up">
+        <div class="section-tag">Stay Informed</div>
+        <h2 style="font-size: 28px; margin: 8px 0 4px;">Official Notices</h2>
+        <p style="color: var(--muted);">Important announcements from school administration</p>
+        
+        <!-- Notice Count Badge -->
+        <div style="margin-top: 12px;">
+            <span style="background: #EFF6FF; color: #2563EB; padding: 4px 16px; border-radius: 40px; font-size: 13px; font-weight: 500;">
+                <i class="fa fa-bell me-1"></i> <?= count($notices) ?> notice<?= count($notices) !== 1 ? 's' : '' ?> available
+            </span>
+        </div>
+    </div>
+
+    <!-- Notices List -->
+    <?php if ($notices): ?>
+        <?php foreach ($notices as $i => $notice):
+            $aud = $audience_colors[$notice['audience']] ?? $audience_colors['all'];
+        ?>
+        <div class="notice-card fade-up" style="transition-delay: <?= $i * 0.05 ?>s">
+            <!-- Title and Badge -->
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+                <h3 class="notice-title"><?= htmlspecialchars($notice['title']) ?></h3>
+                <span class="audience-badge" style="background: <?= $aud['bg'] ?>; color: <?= $aud['color'] ?>;">
+                    <?= $aud['label'] ?>
+                </span>
+            </div>
+            
+            <!-- Meta Info -->
+            <div class="notice-meta">
+                <span>
+                    <i class="fa fa-user-circle" style="color: #2563EB;"></i> 
+                    <?= htmlspecialchars($notice['posted_by']) ?>
+                </span>
+                <span>
+                    <i class="fa fa-calendar-alt" style="color: #2563EB;"></i> 
+                    <?= date('F j, Y', strtotime($notice['created_at'])) ?>
+                </span>
+                <span>
+                    <i class="fa fa-clock" style="color: #2563EB;"></i> 
+                    <?= time_ago($notice['created_at']) ?>
+                </span>
+            </div>
+            
+            <!-- Content -->
+            <div class="notice-content">
+                <?= nl2br(htmlspecialchars($notice['content'])) ?>
+            </div>
+        </div>
+        <?php endforeach; ?>
+        
+        <!-- Footer Note -->
+        <div class="text-center mt-4 fade-up" style="transition-delay: 0.2s;">
+            <p style="font-size: 12px; color: #9CA3AF;">
+                <i class="fa fa-envelope me-1"></i> For urgent matters, contact the school office directly.
+            </p>
+        </div>
+        
+    <?php else: ?>
+        <div class="empty-state fade-up">
+            <i class="fa fa-bell-slash"></i>
+            <h4 style="color: #4B5563; margin-bottom: 8px;">No Notices Available</h4>
+            <p style="color: #9CA3AF;">There are no announcements at the moment. Check back later for updates.</p>
+            <a href="index.php" class="btn-enroll mt-3" style="display: inline-flex; background: #2563EB;">
+                <i class="fa fa-home me-1"></i> Return to Dashboard
+            </a>
+        </div>
+    <?php endif; ?>
+
 </div>
 
-<?php if ($notices): ?>
-  <div class="row g-4">
-    <?php foreach ($notices as $i => $n):
-      $aud = $audience_colors[$n['audience']] ?? $audience_colors['all'];
-    ?>
-    <div class="col-12 fade-up" style="transition-delay:<?= $i * 0.05 ?>s">
-      <div class="card-box" style="padding:24px;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:0;">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-              <h5 style="font-size:16px;font-weight:700;color:var(--navy);margin:0;"><?= htmlspecialchars($n['title']) ?></h5>
-              <span style="background:<?= $aud['bg'] ?>;color:<?= $aud['color'] ?>;font-size:11px;font-weight:700;padding:2px 10px;border-radius:50px;">
-                <?= $aud['label'] ?>
-              </span>
-            </div>
-            <p style="color:var(--text);font-size:14px;line-height:1.7;margin-bottom:12px;"><?= nl2br(htmlspecialchars($n['content'])) ?></p>
-            <div style="display:flex;gap:16px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;">
-              <span><i class="fa fa-user me-1" style="color:var(--gold);"></i><?= htmlspecialchars($n['posted_by']) ?></span>
-              <span><i class="fa fa-clock me-1" style="color:var(--gold);"></i><?= time_ago($n['created_at']) ?></span>
-              <span><i class="fa fa-calendar me-1" style="color:var(--gold);"></i><?= date('d M Y', strtotime($n['created_at'])) ?></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <?php endforeach; ?>
-  </div>
-<?php else: ?>
-  <div class="card-box text-center" style="padding:50px;">
-    <i class="fa fa-bell-slash" style="font-size:40px;color:var(--border);display:block;margin-bottom:12px;"></i>
-    <p style="color:var(--muted);">No notices at the moment. Check back later.</p>
-  </div>
-<?php endif; ?>
+<script>
+// Fade up animation
+document.addEventListener('DOMContentLoaded', function() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+});
+</script>
 
