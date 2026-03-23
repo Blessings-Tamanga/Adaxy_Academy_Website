@@ -12,6 +12,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Adaxy Academy · <?= $page_title ?? 'Student Dashboard' ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+ 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
     :root {
@@ -108,7 +109,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <a class="nav-link <?= $current_page==='grades.php'?'active':'' ?>" href="grades.php"><i class="fa fa-file-lines"></i> My Grades</a>
     <a class="nav-link <?= $current_page==='timetable.php'?'active':'' ?>" href="timetable.php"><i class="fa fa-calendar-alt"></i> Timetable</a>
     <a class="nav-link <?= $current_page==='notices.php'?'active':'' ?>" href="notices.php"><i class="fa fa-bell"></i> Notices</a>
-    <a class="nav-link <?= $current_page==='concern.php'?'active':'' ?>" href="concern.php"><i class="fa fa-triangle-exclamation"></i> Raise Concern</a>
+    <a class="nav-link <?= $current_page==='concern.php'?'active':'' ?>" href="concern.php"><i class="fa fa-triangle-exclamation"></i> Raise Concern/ contact</a>
     <a class="nav-link <?= $current_page==='bursary.php'?'active':'' ?>" href="bursary.php"><i class="fa fa-hand-holding-heart"></i> Bursary</a>
     <a class="nav-link <?= $current_page==='settings.php'?'active':'' ?>" href="settings.php"><i class="fa fa-cog"></i> Settings</a>
     <a class="nav-link" href="../Auth/logout.php"><i class="fa fa-sign-out-alt"></i> Logout</a>
